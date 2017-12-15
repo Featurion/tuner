@@ -1,0 +1,6 @@
+# Commands
+
+RESP = 0
+HELLO = 1
+VIDEO_RELAY = 2
+AUDIO_RELAY = 3
