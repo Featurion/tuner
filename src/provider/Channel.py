@@ -1,4 +1,10 @@
 class Channel(object):
 
     def __init__(self):
-        pass
+        self.__image = None
+
+    def setImage(self, image):
+        self.__image = image
+
+    def getImage(self):
+        return self.__image

@@ -30,8 +30,9 @@ class Datagram(object):
 
     def toJSON(self):
         data = self.getData()
+        command = self.getCommand()
 
         return json.dumps({
-            'command': self.getCommand(),
+            'command': command,
             'data': data,
         })

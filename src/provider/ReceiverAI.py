@@ -3,8 +3,10 @@ import base64
 import struct
 import socket
 import queue
+import numpy as np
 
-from src.base import utils
+from src.base import constants, utils
+from src.base.Datagram import Datagram
 
 class ReceiverAI(object):
 
@@ -31,7 +33,12 @@ class ReceiverAI(object):
     def send(self):
         while True:
             try:
-                data = base64.b85encode(self.getOutbox().toJSON().encode())
+                im = np.zeros((1920, 1080, 3), np.uint8)
+                datagram = Datagram()
+                datagram.setCommand(constants.VIDEO_RELAY)
+                datagram.setData({0: im.tolist()})
+                self.__outbox.put(datagram)
+                data = base64.b85encode(datagram.toJSON().encode())
 
                 size = len(data)
 

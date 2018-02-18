@@ -12,11 +12,6 @@ from src.base import constants, utils
 from src.base.Datagram import Datagram
 from src.provider.ReceiverAI import ReceiverAI
 
-class Receiver(object):
-
-    def __init__(self, socket_):
-        self.__socket = socket_
-
 class Provider(QWidget):
 
     def __init__(self):
@@ -79,10 +74,9 @@ class Provider(QWidget):
         wait = threading.Thread(target=self.wait)
         wait.start()
 
-        #recv = threading.Thread(target=self.recv)
-        #recv.start()
-
     """
+    TODO: Broadcaster
+
     def recv(self):
         while True:
             try:
