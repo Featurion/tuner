@@ -17,12 +17,3 @@ class Datagram(dict):
             self[key] = val
         else:
             raise AttributeError('cannot override %s' % repr(val))
-
-
-
-
-
-
-
-
-
