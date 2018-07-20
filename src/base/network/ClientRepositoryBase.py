@@ -4,8 +4,8 @@ import msgpack
 import socket
 import struct
 
-from src.base.Datagram import Datagram
-from src.distributed.meta import MetaHandler
+from src.base.network.Datagram import Datagram
+from src.base.network.meta import MetaHandler
 
 
 class ClientRepositoryBase(metaclass=MetaHandler):

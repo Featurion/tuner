@@ -1,8 +1,8 @@
 import asyncio
 import socket
 
-from src.distributed.ClientRepositoryAI import ClientRepositoryAI
-from src.distributed.ConnectionRepository import ConnectionRepository
+from src.base.network.ClientRepositoryAI import ClientRepositoryAI
+from src.base.network.ConnectionRepository import ConnectionRepository
 
 
 class ServerRepository(ConnectionRepository):
