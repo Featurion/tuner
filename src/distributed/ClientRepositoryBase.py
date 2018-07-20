@@ -23,10 +23,10 @@ class ClientRepositoryBase(metaclass=MetaHandler):
         else:
             return elem
 
-    def __init__(self, uuid_, read_stream, write_stream):
+    def __init__(self, uuid_, reader, writer):
         self._uuid = uuid_
-        self.__reader = read_stream
-        self.__writer = write_stream
+        self.__reader = reader
+        self.__writer = writer
         self.__handlers = {code: getattr(self, name) \
                            for code, name in \
                            self.__class__.handlers.items()}
@@ -38,7 +38,7 @@ class ClientRepositoryBase(metaclass=MetaHandler):
     async def __aenter__(self):
         return self
 
-    async def __aexit__(self, exc_type, exc, tb):
+    async def __aexit__(self, type_, val, tb):
         self.cleanup()
 
     async def start(self):
@@ -70,9 +70,9 @@ class ClientRepositoryBase(metaclass=MetaHandler):
             # no transport
             pass
 
-    async def _recv(self, n_bytes: int = None) -> bytes:
+    async def _recv(self, size: int = None) -> bytes:
         try:
-            return await self.__reader.read(n_bytes)
+            return await self.__reader.read(size)
         except ConnectionResetError:
             # client terminated
             pass
@@ -87,15 +87,14 @@ class ClientRepositoryBase(metaclass=MetaHandler):
 
     async def sendDatagram(self, dg: Datagram):
         bytes_ = base64.b85encode(msgpack.dumps(dg))
-        n_bytes = len(bytes_)
-        pointer = struct.pack('I', socket.htonl(n_bytes))
+        pointer = struct.pack('I', socket.htonl(len(bytes_)))
         await self._send(pointer + bytes_)
 
     async def recvDatagram(self) -> Datagram:
         try:
             pointer = await self._recv(4)
-            n_bytes = socket.ntohl(struct.unpack('I', pointer)[0])
-            bytes_ = await self._recv(n_bytes)
+            size = socket.ntohl(struct.unpack('I', pointer)[0])
+            bytes_ = await self._recv(size)
             data = msgpack.loads(base64.b85decode(bytes_))
             return Datagram(**self.debyte(data))
         except struct.error:
