@@ -3,10 +3,10 @@ import uuid
 
 from src.base.constants import *
 from src.base.Datagram import Datagram
-from src.distributed.ConnectionManager import ConnectionManager
+from src.distributed.ClientRepositoryBase import ClientRepositoryBase
 
 
-class ClientRepositoryAI(ConnectionManager):
+class ClientRepositoryAI(ClientRepositoryBase):
 
     def __init__(self, reader, writer):
         super().__init__(uuid.uuid4(), reader, writer)

@@ -2,7 +2,6 @@ import asyncio
 import socket
 
 from src.distributed.ClientRepositoryAI import ClientRepositoryAI
-from src.distributed.ConnectionManager import ConnectionManager
 from src.distributed.ConnectionRepository import ConnectionRepository
 
 

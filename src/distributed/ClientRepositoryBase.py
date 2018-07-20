@@ -8,7 +8,7 @@ from src.base.Datagram import Datagram
 from src.distributed.meta import MetaHandler
 
 
-class ConnectionManager(metaclass=MetaHandler):
+class ClientRepositoryBase(metaclass=MetaHandler):
 
     msgtype = 'CLIENT'
 
