@@ -16,7 +16,7 @@ class ClientRepositoryAI(ClientRepositoryBase):
         await super().start()
 
     async def r_handleHello(self, dg):
-        if dg['data'] != SERVER_VERSION:
+        if dg.data != SERVER_VERSION:
             dg = Datagram(code=CLIENT_EJECT, data='Wrong server version!')
         else:
             dg = Datagram(code=CLIENT_HELLO_RESP)
