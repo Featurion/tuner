@@ -19,7 +19,7 @@ class ConnectionRepository(socket.socket):
         try:
             self._run()
         except KeyboardInterrupt:
-            # done with server
+            # done with connection
             self.cleanup()
         finally:
             self._loop.close()
