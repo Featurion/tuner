@@ -22,5 +22,3 @@ class ClientRepositoryAI(ClientRepositoryBase):
             dg = Datagram(code=CLIENT_HELLO_RESP)
 
         await self.sendDatagram(dg)
-
-
