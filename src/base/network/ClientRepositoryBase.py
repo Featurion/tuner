@@ -45,12 +45,9 @@ class ClientRepositoryBase(metaclass=MetaHandler):
         while True:
             dg = await self.recvDatagram()
             if dg:
-                try:
-                    # check for native r_X handling
-                    await self.__handlers[dg.code](dg)
-                except (AttributeError, KeyError):
-                    # default handler
-                    await self.handleDatagram(dg)
+                # check for native r_X handling
+                handler = self.__handlers.get(dg.code, self.handleDatagram)
+                await handler(dg)
             else:
                 # connection broke
                 break
