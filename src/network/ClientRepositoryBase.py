@@ -4,8 +4,8 @@ import msgpack
 import socket
 import struct
 
-from src.base.network.Datagram import Datagram
-from src.base.network.meta.MetaHandler import MetaHandler
+from src.network.Datagram import Datagram
+from src.network.meta.MetaHandler import MetaHandler
 
 
 class ClientRepositoryBase(metaclass=MetaHandler):
@@ -34,6 +34,10 @@ class ClientRepositoryBase(metaclass=MetaHandler):
     def id(self):
         return self._uuid.hex
 
+    @property
+    def running(self):
+        return True
+
     async def __aenter__(self):
         return self
 
@@ -41,19 +45,18 @@ class ClientRepositoryBase(metaclass=MetaHandler):
         self.cleanup()
 
     async def start(self):
-        while True:
-            try:
-                dg = await self.recvDatagram()
-            except asyncio.CancelledError:
-                dg = None
-
+        while self.running:
+            await self.heartbeat()
+            dg = await self.recvDatagram()
             if dg:
                 # check for native r_X handling
                 handler = self.__handlers.get(dg.code, self.handleDatagram)
                 await handler(dg)
-            else:
+            elif dg is None:
                 # connection broke
                 break
+            else:
+                continue
 
     def cleanup(self):
         self.__reader = None
@@ -70,10 +73,11 @@ class ClientRepositoryBase(metaclass=MetaHandler):
             # no transport
             pass
 
-    async def _recv(self, size: int = None) -> bytes:
+    async def _recv(self, n_bytes: int = None, timeout=None) -> bytes:
         try:
-            return await self.__reader.read(size)
-        except ConnectionResetError:
+            return await asyncio.wait_for(self.__reader.read(n_bytes),
+                                          timeout=timeout)
+        except (asyncio.CancelledError, ConnectionResetError):
             # client terminated
             pass
         except asyncio.streams.IncompleteReadError:
@@ -83,7 +87,7 @@ class ClientRepositoryBase(metaclass=MetaHandler):
             # no transport
             pass
 
-        return bytes()
+        return None
 
     async def sendDatagram(self, dg: Datagram):
         bytes_ = base64.b85encode(msgpack.dumps(dg))
@@ -92,11 +96,13 @@ class ClientRepositoryBase(metaclass=MetaHandler):
 
     async def recvDatagram(self) -> Datagram:
         try:
-            pointer = await self._recv(4)
-            size = socket.ntohl(struct.unpack('I', pointer)[0])
-            bytes_ = await self._recv(size)
+            pointer = await self._recv(4, timeout=0.1)
+            n_bytes = socket.ntohl(struct.unpack('I', pointer)[0])
+            bytes_ = await self._recv(n_bytes)
             data = msgpack.loads(base64.b85decode(bytes_))
             return Datagram(**self.debyte(data))
+        except asyncio.TimeoutError:
+            return Datagram()
         except struct.error:
             # bad pointer
             pass
@@ -105,6 +111,9 @@ class ClientRepositoryBase(metaclass=MetaHandler):
             pass
 
         return None
+
+    async def heartbeat(self):
+        pass
 
     async def handleDatagram(self, dg: Datagram):
         pass

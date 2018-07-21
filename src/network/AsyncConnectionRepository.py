@@ -1,18 +1,18 @@
 import asyncio
 
-from src.base.network.ConnectionRepository import ConnectionRepository
+from src.network.ConnectionRepository import ConnectionRepository
 
 
 class AsyncConnectionRepository(ConnectionRepository):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, loop=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self._loop = asyncio.get_event_loop()
+        self._loop = loop or asyncio.get_event_loop()
 
     def run(self):
         try:
             self.connect()
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, SystemExit):
             # done with connection
             self.handleDisconnected()
         finally:

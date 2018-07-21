@@ -2,9 +2,9 @@ import asyncio
 import uuid
 
 from src.base.constants import *
-from src.base.network.Datagram import Datagram
-from src.base.network.ClientRepositoryBase import ClientRepositoryBase
-from src.base.network.AsyncConnectionRepository import AsyncConnectionRepository
+from src.network.Datagram import Datagram
+from src.network.ClientRepositoryBase import ClientRepositoryBase
+from src.network.AsyncConnectionRepository import AsyncConnectionRepository
 
 
 class ClientRepository(ClientRepositoryBase, AsyncConnectionRepository):
@@ -20,7 +20,14 @@ class ClientRepository(ClientRepositoryBase, AsyncConnectionRepository):
         hex_ = self._loop.run_until_complete(self._recv(32))
         self._uuid = uuid.UUID(hex=hex_.decode())
 
+        self._isRunning = False
+
+    @property
+    def running(self):
+        return self._isRunning
+
     def connect(self):
+        self._isRunning = True
         self._loop.run_until_complete(self.start())
 
     def cleanup(self):
@@ -39,4 +46,7 @@ class ClientRepository(ClientRepositoryBase, AsyncConnectionRepository):
         await self.sendDatagram(dg)
 
     async def r_handleHelloResp(self, dg):
+        pass
+
+    async def heartbeat(self):
         pass

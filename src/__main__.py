@@ -24,25 +24,14 @@ class Launcher(object):
 
     def run(self):
         if self.args.broadcaster:
-            self.__launchBroadcaster()
+            return
         elif self.args.provider:
-            self.__launchProvider()
+            from src.provider.Provider import ProviderUI as App
         else:
-            self.__launchReceiver()
+            from src.receiver.ReceiverApp import ReceiverApp as App
 
-    def __launchBroadcaster(self):
-        # ???
-        pass
-
-    def __launchProvider(self):
-        from src.provider.Provider import ProviderUI
-        provider = ProviderUI()
-        provider.start()
-
-    def __launchReceiver(self):
-        from src.receiver.ReceiverUI import ReceiverUI
-        receiver = ReceiverUI()
-        receiver.start()
+        __builtins__.app = App()
+        app.start()
 
 
 if __name__ == '__main__':
