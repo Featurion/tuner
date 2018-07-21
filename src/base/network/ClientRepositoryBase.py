@@ -27,8 +27,7 @@ class ClientRepositoryBase(metaclass=MetaHandler):
         self._uuid = uuid_
         self.__reader = reader
         self.__writer = writer
-        self.__handlers = {code: getattr(self, name) \
-                           for code, name in \
+        self.__handlers = {code: getattr(self, name) for code, name in
                            self.__class__.handlers.items()}
 
     @property
@@ -43,7 +42,11 @@ class ClientRepositoryBase(metaclass=MetaHandler):
 
     async def start(self):
         while True:
-            dg = await self.recvDatagram()
+            try:
+                dg = await self.recvDatagram()
+            except asyncio.CancelledError:
+                dg = None
+
             if dg:
                 # check for native r_X handling
                 handler = self.__handlers.get(dg.code, self.handleDatagram)
