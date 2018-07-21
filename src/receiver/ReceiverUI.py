@@ -3,63 +3,40 @@ from PyQt5.QtCore import QSize
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel
 from PyQt5.QtWidgets import QLineEdit, QPushButton
 
-from src.base import utils
-
 from src.receiver.Receiver import Receiver
 
+
 class ReceiverUI(QApplication):
-    startReceiverSignal = pyqtSignal(str, int)
-    resetSignal = pyqtSignal()
 
     def __init__(self):
         QApplication.__init__(self, [])
-
-        self.startReceiverSignal.connect(self.__startReceiver)
-        self.resetSignal.connect(self.reset)
-
-        self.__receiverThread = QThread()
-        self.__receiverThread.start()
-
         self.__resolution = self.desktop().screenGeometry()
-        self.__width = self.__resolution.width()
-        self.__height = self.__resolution.height()
-
         self.__window = None
-        self.__receiver = None
 
-    def getReceiverThread(self):
-        return self.__receiverThread
+    @property
+    def width(self):
+        return self.__resolution.width()
 
-    def getResolution(self):
-        return (self.__width, self.__height)
+    @property
+    def height(self):
+        return self.__resolution.height()
 
-    def getSize(self):
-        width, height = self.getResolution()
-        return QSize(width, height)
+    @property
+    def size(self):
+        return QSize(self.width, self.height)
 
     @pyqtSlot()
     def start(self):
         self.__window = Window(self)
         self.__window.show()
-
         self.exec_()
 
     def reset(self):
         del self.__window
-        del self.__receiver
-
         self.__window = None
-        self.__receiver = None
-
         self.__window = Window(self)
         self.__window.show()
 
-    @pyqtSlot(str, int)
-    def __startReceiver(self, ip, port):
-        del self.__window
-        self.__window = None
-
-        self.__receiver = Receiver(self, ip, port)
 
 class Window(QMainWindow):
 
@@ -68,22 +45,22 @@ class Window(QMainWindow):
 
         self.__ui = ui
 
-        self.setWindowTitle("Receiver")
+        self.setWindowTitle('Receiver')
         self.resize(600, 400)
 
-        self.ipport = QLabel(self)
-        self.ipport.setText("IP/Port:")
-        self.ipport.move(250, 155)
+        self.addr = QLabel(self)
+        self.addr.setText('Host/Port:')
+        self.addr.move(220, 155)
 
-        self.ip = QLineEdit(self)
-        self.ip.move(290, 160)
-        self.ip.resize(100, 20)
-        self.ip.setText("127.0.0.1")
+        self.host = QLineEdit(self)
+        self.host.move(290, 160)
+        self.host.resize(100, 20)
+        self.host.setText('127.0.0.1')
 
         self.port = QLineEdit(self)
         self.port.move(400, 160)
         self.port.resize(50, 20)
-        self.port.setText("1613")
+        self.port.setText('1613')
 
         self.button = QPushButton('Start', self)
         self.button.move(290, 180)
@@ -91,7 +68,7 @@ class Window(QMainWindow):
         self.button.clicked.connect(self.start)
 
     def start(self):
-        ip = self.ip.text()
+        host = self.host.text()
         port = self.port.text()
 
         try:
@@ -99,5 +76,3 @@ class Window(QMainWindow):
         except ValueError:
             print('Invalid port!')
             return
-
-        self.__ui.startReceiverSignal.emit(ip, port)

@@ -11,9 +11,9 @@ from PyQt5.QtCore import QObject, QPoint
 from PyQt5.QtWidgets import QWidget, QMainWindow
 from PyQt5.QtGui import QImage, QPainter
 
-from src.base import constants, utils
+from src.base.constants import *
 
-from src.base.Datagram import Datagram
+from src.base.network.Datagram import Datagram
 
 class ShowVideo(QObject):
     imageSignal = pyqtSignal(QImage)
@@ -67,20 +67,7 @@ class ShowVideo(QObject):
         self.__inbox = queue.Queue()
         self.__outbox = queue.Queue()
         self.__channel = 0
-
-        recv = threading.Thread(target=self.__recv, daemon=True)
-        handler = threading.Thread(target=self.__handleDatagram, daemon=True)
-
-        recv.start()
-        handler.start()
-
         self.doVideoSignal.emit()
-
-        #datagram = Datagram()
-        #datagram.setCommand(constants.CHANGE_CH)
-        #datagram.setData((self.__channel))
-
-        #self.sendDatagram(datagram)
 
     @pyqtSlot()
     def __doVideo(self):
@@ -143,25 +130,9 @@ class ShowVideo(QObject):
 
             data = recv.getData()[self.__channel]
 
-            if recv.getCommand() == constants.VIDEO_RELAY:
+            if recv.getCommand() == VIDEO_RELAY:
                 self.__putRecv(data)
 
-    def __recv(self):
-        while True:
-            try:
-                sizeSignal = utils.recv(self.getSocket(), 4)
-                size = socket.ntohl(struct.unpack('I', sizeSignal)[0])
-                data = utils.recv(self.getSocket(), size)
-
-                data = base64.b85decode(data)
-
-                datagram = Datagram.fromJSON(data)
-                self.receiveDatagram(datagram)
-            except struct.error as e:
-                continue
-            except Exception as e:
-                print(e)
-                break
 
 class ImageViewer(QWidget):
 
