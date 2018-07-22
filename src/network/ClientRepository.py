@@ -1,4 +1,5 @@
 import asyncio
+import builtins
 import uuid
 
 from src.base.constants import *
@@ -20,14 +21,9 @@ class ClientRepository(ClientRepositoryBase, AsyncConnectionRepository):
         hex_ = self._loop.run_until_complete(self._recv(32))
         self._uuid = uuid.UUID(hex=hex_.decode())
 
-        self._isRunning = False
-
-    @property
-    def running(self):
-        return self._isRunning
+        builtins.conn = self
 
     def connect(self):
-        self._isRunning = True
         self._loop.run_until_complete(self.start())
 
     def cleanup(self):
@@ -38,7 +34,11 @@ class ClientRepository(ClientRepositoryBase, AsyncConnectionRepository):
         await self.sendHello()
         await super().start()
 
+    async def heartbeat(self):
+        pass
+
     async def r_handleEject(self, dg):
+        # TODO
         pass
 
     async def sendHello(self):
@@ -46,7 +46,5 @@ class ClientRepository(ClientRepositoryBase, AsyncConnectionRepository):
         await self.sendDatagram(dg)
 
     async def r_handleHelloResp(self, dg):
-        pass
-
-    async def heartbeat(self):
+        # TODO
         pass

@@ -8,7 +8,7 @@ class Window(QMainWindow):
         app.window = None
 
     def start(self):
-        pass
+        self.show()
 
     def cleanup(self):
-        pass
+        self.close()

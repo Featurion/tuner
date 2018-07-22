@@ -3,44 +3,50 @@ import numpy as np
 
 from PyQt5.QtCore import Qt, QObject, QPoint, QSize
 from PyQt5.QtGui import QImage, QPainter
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QVBoxLayout, QWidget
 
 
 class VideoManager(QObject):
 
     class _View(QWidget):
 
-        def __init__(self, mgr):
-            super().__init__(app.window)
-            app.window.setCentralWidget(self)
-            self.__mgr = mgr
-
         def paintEvent(self, event):
-            if self.__mgr.frame.isNull():
+            frame = self.parent().video_mgr.frame
+            if not frame or frame.isNull():
                 event.ignore()
+                return
             else:
                 event.accept()
-                painter = QPainter(self)
-                painter.drawImage(QPoint(0, 0), self.__mgr.frame)
 
-    def __init__(self):
+            cur_size = self.size()
+            painter = QPainter(self)
+            painter.drawImage(QPoint(0, 0), frame)
+
+            if cur_size != frame.size():
+                self.parent().resize(frame.size())
+                geom = self.parent().frameGeometry()
+                center = app.desktop().screenGeometry().center()
+                geom.moveCenter(center)
+                self.parent().move(geom.topLeft())
+
+    def __init__(self, window):
         super().__init__(None)
-        self.__res = app.desktop().screenGeometry()
-        self.__view = VideoManager._View(self)
-        self.__view.setFixedSize(QSize(*self.resolution))
-        self.__frame = QImage()
+        self.__frame = None
+        self.__view = VideoManager._View(window)
+        layout = QVBoxLayout(self.__view)
+        window.setCentralWidget(self.__view)
+
+    @property
+    def resolution(self) -> QSize:
+        return self.__view.size()
 
     @property
     def width(self) -> int:
-        return self.__res.width()
+        return self.__view.width()
 
     @property
     def height(self) -> int:
-        return self.__res.height()
-
-    @property
-    def resolution(self) -> tuple:
-        return (self.width, self.height)
+        return self.__view.height()
 
     @property
     def frame(self) -> QImage:
@@ -49,6 +55,7 @@ class VideoManager(QObject):
     @frame.setter
     def frame(self, frame: np.ndarray):
         if frame is None:
+            # create a random static frame
             data = np.random.randint(2, size=(self.height, self.width),
                                       dtype=np.uint8)
             data = np.tile(np.atleast_3d(data), 3)
@@ -56,6 +63,7 @@ class VideoManager(QObject):
         else:
             data = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        self.__frame = QImage(data.data, *self.resolution, data.strides[0],
+        height, width, _ = data.shape
+        self.__frame = QImage(data.data, width, height, data.strides[0],
                               QImage.Format_RGB888)
         self.__view.update()

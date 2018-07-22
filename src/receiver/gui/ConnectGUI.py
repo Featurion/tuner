@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QLabel, QLineEdit, QPushButton
 
 from src.gui.Window import Window
-from src.receiver.gui.ViewerGUI import ViewerGUI
+from src.receiver.gui.RemoteViewGUI import RemoteViewGUI
 
 
 class ConnectGUI(Window):
@@ -33,4 +33,4 @@ class ConnectGUI(Window):
 
     def __connect(self):
         host, port = self.host.text(), self.port.text()
-        app.window = ViewerGUI(host, int(port))
+        app.window = RemoteViewGUI(host, int(port))
