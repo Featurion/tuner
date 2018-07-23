@@ -11,18 +11,22 @@ from ..network.AsyncConnectionRepository import AsyncConnectionRepository
 class ClientRepository(ClientRepositoryBase, AsyncConnectionRepository):
 
     def __init__(self, *args, **kwargs):
-        AsyncConnectionRepository.__init__(self, *args, **kwargs)
-        AsyncConnectionRepository.connect(self)
+        try:
+            AsyncConnectionRepository.__init__(self, *args, **kwargs)
+            AsyncConnectionRepository.connect(self)
+        except ConnectionRefusedError:
+            # TODO
+            return
+        else:
+            coro = asyncio.open_connection(loop=self._loop, sock=self)
+            streams = self._loop.run_until_complete(coro)
+            ClientRepositoryBase.__init__(self, None, *streams)
 
-        coro = asyncio.open_connection(loop=self._loop, sock=self)
-        streams = self._loop.run_until_complete(coro)
-        ClientRepositoryBase.__init__(self, None, *streams)
-
-        hex_ = self._loop.run_until_complete(self._recv(32))
-        self._uuid = uuid.UUID(hex=hex_.decode())
-
-        self.__running = False
-        builtins.conn = self
+            hex_ = self._loop.run_until_complete(self._recv(32))
+            self._uuid = uuid.UUID(hex=hex_.decode())
+        finally:
+            self.__running = False
+            builtins.conn = self
 
     @property
     def running(self):
