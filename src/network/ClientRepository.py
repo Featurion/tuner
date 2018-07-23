@@ -2,10 +2,10 @@ import asyncio
 import builtins
 import uuid
 
-from src.base.constants import *
-from src.network.Datagram import Datagram
-from src.network.ClientRepositoryBase import ClientRepositoryBase
-from src.network.AsyncConnectionRepository import AsyncConnectionRepository
+from ..base.constants import *
+from ..network.Datagram import Datagram
+from ..network.ClientRepositoryBase import ClientRepositoryBase
+from ..network.AsyncConnectionRepository import AsyncConnectionRepository
 
 
 class ClientRepository(ClientRepositoryBase, AsyncConnectionRepository):
@@ -21,10 +21,19 @@ class ClientRepository(ClientRepositoryBase, AsyncConnectionRepository):
         hex_ = self._loop.run_until_complete(self._recv(32))
         self._uuid = uuid.UUID(hex=hex_.decode())
 
+        self.__running = False
         builtins.conn = self
 
+    @property
+    def running(self):
+        return self.__running
+
     def connect(self):
+        self.__running = True
         self._loop.run_until_complete(self.start())
+
+    def disconnect(self):
+        self.__running = False
 
     def cleanup(self):
         ClientRepositoryBase.cleanup(self)

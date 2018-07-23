@@ -1,33 +1,30 @@
-from PyQt5.QtWidgets import QApplication
+from ..base.ClientAgent import ClientAgent
+from ..gui.App import App
+from ..gui.RemoteViewGUI import RemoteViewGUI
+from ..receiver.ReceiverRepository import ReceiverRepository
 
-from src.receiver.gui.ConnectGUI import ConnectGUI
 
-
-class ReceiverApp(QApplication):
+class ReceiverApp(App):
 
     def __init__(self):
-        QApplication.__init__(self, [])
-        self.aboutToQuit.connect(self.cleanup)
-        self.__window = None
+        super().__init__()
+        self.__net_thread = None
 
     @property
-    def window(self):
-        return self.__window
+    def daemon(self):
+        return self.__net_thread
 
-    @window.setter
-    def window(self, window):
-        if self.window:
-            self.window.cleanup()
-
-        self.__window = window
-
-        if self.window:
-            self.window.start()
-
-    def start(self):
-        self.window = ConnectGUI()
-        self.exec_()
+    def connect(self, host, port):
+        try:
+            self.__net_thread = ClientAgent(ReceiverRepository)
+            self.__net_thread.start(host, int(port))
+            self.window = RemoteViewGUI()
+        except ValueError:
+            return
 
     def cleanup(self):
-        if self.window:
-            self.window = None
+        super().cleanup()
+        if self.__net_thread:
+            self.__net_thread.quit()
+            self.__net_thread.wait()
+            self.__net_thread = None

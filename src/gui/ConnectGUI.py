@@ -1,15 +1,14 @@
 from PyQt5.QtWidgets import QLabel, QLineEdit, QPushButton
 
-from src.gui.Window import Window
-from src.receiver.gui.RemoteViewGUI import RemoteViewGUI
+from .Window import Window
 
 
 class ConnectGUI(Window):
 
-    def __init__(self):
+    def __init__(self, cb):
         super().__init__()
+        self.__cb = cb
 
-        self.setWindowTitle('Receiver')
         self.resize(600, 400)
 
         self.addr = QLabel(self)
@@ -29,8 +28,12 @@ class ConnectGUI(Window):
         self.button = QPushButton('Start', self)
         self.button.move(290, 180)
         self.button.resize(70, 25)
-        self.button.clicked.connect(self.__connect)
+        self.button.clicked.connect(self.__cb_sanitized)
 
-    def __connect(self):
-        host, port = self.host.text(), self.port.text()
-        app.window = RemoteViewGUI(host, int(port))
+    def __cb_sanitized(self):
+        try:
+            host, port = self.host.text(), int(self.port.text())
+        except ValueError:
+            return
+
+        self.__cb(host, port)

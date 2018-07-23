@@ -1,6 +1,6 @@
 import re
 
-from src.base.constants import Msg2Code
+from ...base.constants import Msg2Code
 
 
 class MetaHandler(type):

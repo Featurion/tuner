@@ -1,6 +1,6 @@
 import cv2
 
-from src.network.ClientRepository import ClientRepository
+from ..network.ClientRepository import ClientRepository
 
 
 class ReceiverRepository(ClientRepository):
@@ -8,14 +8,13 @@ class ReceiverRepository(ClientRepository):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__running = False
+        self.rec = cv2.VideoCapture(0) # TEMP
 
-    @property
-    def running(self):
-        return self.__running
+    async def heartbeat(self):
+        # TEMP
+        if self.rec:
+            _, frame = self.rec.read()
+        else:
+            frame = None
 
-    def connect(self):
-        self.__running = True
-        super().connect()
-
-    def disconnect(self):
-        self.__running = False
+        app.window.video_mgr.frame = frame

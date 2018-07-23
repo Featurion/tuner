@@ -2,7 +2,7 @@ import uvloop
 
 from PyQt5.QtCore import QThread
 
-from src.network.ClientRepository import ClientRepository
+from ..network.ClientRepository import ClientRepository
 
 
 class ClientAgent(QThread):

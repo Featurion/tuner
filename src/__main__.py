@@ -26,9 +26,9 @@ class Launcher(object):
         if self.args.broadcaster:
             return
         elif self.args.provider:
-            from src.provider.Provider import ProviderUI as App
+            from .provider.ProviderApp import ProviderApp as App
         else:
-            from src.receiver.ReceiverApp import ReceiverApp as App
+            from .receiver.ReceiverApp import ReceiverApp as App
 
         __builtins__.app = App()
         app.start()

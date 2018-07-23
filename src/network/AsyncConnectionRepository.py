@@ -1,6 +1,6 @@
 import asyncio
 
-from src.network.ConnectionRepository import ConnectionRepository
+from ..network.ConnectionRepository import ConnectionRepository
 
 
 class AsyncConnectionRepository(ConnectionRepository):

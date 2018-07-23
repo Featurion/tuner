@@ -1,9 +1,9 @@
 import asyncio
 import uuid
 
-from src.base.constants import *
-from src.network.Datagram import Datagram
-from src.network.ClientRepositoryBase import ClientRepositoryBase
+from ..base.constants import *
+from ..network.Datagram import Datagram
+from ..network.ClientRepositoryBase import ClientRepositoryBase
 
 
 class ClientRepositoryAI(ClientRepositoryBase):
