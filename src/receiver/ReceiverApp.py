@@ -23,8 +23,9 @@ class ReceiverApp(App):
             return
 
     def cleanup(self):
-        super().cleanup()
         if self.__net_thread:
             self.__net_thread.quit()
             self.__net_thread.wait()
             self.__net_thread = None
+
+        self.window = None

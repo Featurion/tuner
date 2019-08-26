@@ -32,5 +32,4 @@ class App(QApplication):
         pass
 
     def cleanup(self):
-        if self.window:
-            self.window = None
+        pass
