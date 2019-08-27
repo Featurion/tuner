@@ -1,4 +1,5 @@
 import asyncio
+import builtins
 import socket
 
 from ..network.ClientRepositoryAI import ClientRepositoryAI
@@ -11,6 +12,8 @@ class ServerRepository(AsyncConnectionRepository):
         super().__init__(*args, **kwargs)
         self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.bind(self.address)
+        self.clients = {}
+        builtins.conn = self
 
     def connect(self):
         # setup serving protocol
@@ -26,3 +29,4 @@ class ServerRepository(AsyncConnectionRepository):
     async def handleClientConnect(self, reader, writer):
         async with ClientRepositoryAI(reader, writer) as conn:
             await conn.start()
+            del self.clients[conn.id]

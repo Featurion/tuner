@@ -4,6 +4,7 @@ import msgpack
 import socket
 import struct
 
+from ..base.constants import *
 from ..network.Datagram import Datagram
 from ..network.meta.MetaHandler import MetaHandler
 
@@ -54,9 +55,13 @@ class ClientRepositoryBase(metaclass=MetaHandler):
                 await handler(dg)
             elif dg is None:
                 # connection broke
+                await self.connBroke()
                 break
             else:
                 continue
+
+    async def connBroke(self):
+        pass
 
     def cleanup(self):
         self.__reader = None

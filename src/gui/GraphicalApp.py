@@ -1,18 +1,24 @@
 from PyQt5.QtWidgets import QApplication
 
+from ..base.ClientAgent import ClientAgent
 from ..gui.ConnectGUI import ConnectGUI
 
 
-class App(QApplication):
+class GraphicalApp(QApplication):
 
     def __init__(self):
         QApplication.__init__(self, [])
         self.aboutToQuit.connect(self.cleanup)
         self.__window = None
+        self.__net_thread = None
 
     @property
     def window(self):
         return self.__window
+
+    @property
+    def daemon(self):
+        return self.__net_thread
 
     @window.setter
     def window(self, window):
@@ -28,8 +34,17 @@ class App(QApplication):
         self.window = ConnectGUI(self.connect)
         self.exec_()
 
-    def connect(self, host, port):
-        pass
+    def connect(self, cls, host, port):
+        try:
+            self.__net_thread = ClientAgent(cls)
+            self.__net_thread.start(host, int(port))
+        except ValueError:
+            pass
 
     def cleanup(self):
-        pass
+        if self.__net_thread:
+            self.__net_thread.quit()
+            self.__net_thread.wait()
+            self.__net_thread = None
+
+        self.window = None

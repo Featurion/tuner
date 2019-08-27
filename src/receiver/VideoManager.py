@@ -1,4 +1,3 @@
-import cv2
 import numpy as np
 
 from PyQt5.QtCore import Qt, QObject, QPoint, QSize
@@ -55,15 +54,16 @@ class VideoManager(QObject):
     @frame.setter
     def frame(self, frame: np.ndarray):
         if frame is None:
-            # create a random static frame
-            data = np.random.randint(2, size=(self.height, self.width),
-                                      dtype=np.uint8)
-            data = np.tile(np.atleast_3d(data), 3)
-            data *= 255
-        else:
-            data = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            return
 
-        height, width, _ = data.shape
-        self.__frame = QImage(data.data, width, height, data.strides[0],
+        height, width, _ = frame.shape
+        self.__frame = QImage(frame.data, width, height, frame.strides[0],
                               QImage.Format_RGB888)
         self.__view.update()
+
+    def static(self):
+        frame = np.random.randint(2, size=(self.height, self.width),
+                                  dtype=np.uint8)
+        frame = np.tile(np.atleast_3d(frame), 3)
+        frame *= 255
+        self.frame = frame

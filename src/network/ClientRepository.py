@@ -47,10 +47,14 @@ class ClientRepository(ClientRepositoryBase, AsyncConnectionRepository):
         await self.sendHello()
         await super().start()
 
+    async def sendDatagram(self, dg: Datagram):
+        dg.user_id = self._uuid.hex
+        await super().sendDatagram(dg)
+
     async def heartbeat(self):
         pass
 
-    async def r_handleEject(self, dg):
+    async def r_handleEject(self, dg: Datagram):
         # TODO
         pass
 
@@ -58,6 +62,6 @@ class ClientRepository(ClientRepositoryBase, AsyncConnectionRepository):
         dg = Datagram(code=CLIENT_HELLO, data=SERVER_VERSION)
         await self.sendDatagram(dg)
 
-    async def r_handleHelloResp(self, dg):
+    async def r_handleHelloResp(self, dg: Datagram):
         # TODO
         pass

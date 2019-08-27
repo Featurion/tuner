@@ -23,10 +23,10 @@ class Launcher(object):
         self.args = parser.parse_args()
 
     def run(self):
-        if self.args.broadcaster:
-            return
-        elif self.args.provider:
+        if self.args.provider:
             from .provider.ProviderApp import ProviderApp as App
+        elif self.args.broadcaster:
+            from .broadcaster.BroadcasterApp import BroadcasterApp as App
         else:
             from .receiver.ReceiverApp import ReceiverApp as App
 
