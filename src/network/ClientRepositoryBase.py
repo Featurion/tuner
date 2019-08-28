@@ -47,8 +47,9 @@ class ClientRepositoryBase(metaclass=MetaHandler):
 
     async def start(self):
         while self.running:
-            await self.heartbeat()
             dg = await self.recvDatagram()
+            if dg and dg.code != CLIENT_FRAME:
+                print(dg)
             if dg:
                 # check for native r_X handling
                 handler = self.__handlers.get(dg.code, self.handleDatagram)
@@ -58,7 +59,10 @@ class ClientRepositoryBase(metaclass=MetaHandler):
                 await self.connBroke()
                 break
             else:
-                continue
+                await self.heartbeat()
+
+    async def stop(self):
+        pass
 
     async def connBroke(self):
         pass
@@ -71,7 +75,7 @@ class ClientRepositoryBase(metaclass=MetaHandler):
         try:
             self.__writer.write(bytes_)
             await self.__writer.drain()  # helps avoid backlog
-        except ConnectionResetError:
+        except (BrokenPipeError, ConnectionResetError):
             # client terminated
             pass
         except AttributeError:

@@ -4,10 +4,18 @@ from PyQt5.QtCore import Qt, QObject, QPoint, QSize
 from PyQt5.QtGui import QImage, QPainter
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
 
+from ..gui.QImageButton import QImageButton
+
 
 class VideoManager(QObject):
 
     class _View(QWidget):
+
+        def __init__(self, parent):
+            super().__init__(parent)
+            self.__exit_btn = QImageButton('resources/exit_btn.jpg', self)
+            self.__exit_btn.resize(40, 40)
+            self.__exit_btn.clicked.connect(parent.exitView)
 
         def paintEvent(self, event):
             frame = self.parent().video_mgr.frame

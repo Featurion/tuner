@@ -1,9 +1,11 @@
 from PyQt5.QtWidgets import QLabel, QLineEdit, QPushButton
 
-from .Window import Window
+from .QWindow import QWindow
+from ..client.BroadcasterRepository import BroadcasterRepository
+from ..client.ReceiverRepository import ReceiverRepository
 
 
-class ConnectGUI(Window):
+class ConnectGUI(QWindow):
 
     def __init__(self, cb):
         super().__init__()
@@ -25,15 +27,24 @@ class ConnectGUI(Window):
         self.port.resize(50, 20)
         self.port.setText('7199')
 
-        self.button = QPushButton('Start', self)
-        self.button.move(290, 180)
-        self.button.resize(70, 25)
-        self.button.clicked.connect(self.__cb_sanitized)
+        bc_button = QPushButton('Broadcaster', self)
+        bc_button.move(200, 180)
+        bc_button.resize(120, 30)
+        bc_button.clicked.connect(self.__make_cb(BroadcasterRepository))
 
-    def __cb_sanitized(self):
+        rc_button = QPushButton('Receiver', self)
+        rc_button.move(380, 180)
+        rc_button.resize(120, 30)
+        rc_button.clicked.connect(self.__make_cb(ReceiverRepository))
+
+    def getAddress(self):
         try:
-            host, port = self.host.text(), int(self.port.text())
+            return (self.host.text(), int(self.port.text()))
         except ValueError:
-            return
+            return ('', 0)
 
-        self.__cb(host, port)
+    def __make_cb(self, cls):
+        def callback():
+            address = self.getAddress()        
+            self.__cb(cls, *address)
+        return callback

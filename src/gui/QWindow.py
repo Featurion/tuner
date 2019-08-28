@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QMainWindow
 
 
-class Window(QMainWindow):
+class QWindow(QMainWindow):
 
     def start(self):
         self.show()

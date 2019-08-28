@@ -10,11 +10,6 @@ class Launcher(object):
 
     def __init__(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument('-b', '--broadcaster',
-                            dest='broadcaster',
-                            action='store_true',
-                            default=False,
-                            help='launch broadcaster server')
         parser.add_argument('-p', '--provider',
                             dest='provider',
                             action='store_true',
@@ -25,10 +20,8 @@ class Launcher(object):
     def run(self):
         if self.args.provider:
             from .provider.ProviderApp import ProviderApp as App
-        elif self.args.broadcaster:
-            from .broadcaster.BroadcasterApp import BroadcasterApp as App
         else:
-            from .receiver.ReceiverApp import ReceiverApp as App
+            from .client.ClientApp import ClientApp as App
 
         __builtins__.app = App()
         app.start()

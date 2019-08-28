@@ -8,10 +8,11 @@ from ..network.AsyncConnectionRepository import AsyncConnectionRepository
 
 class ServerRepository(AsyncConnectionRepository):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, aiClass=ClientRepositoryAI, **kwargs):
         super().__init__(*args, **kwargs)
         self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.bind(self.address)
+        self.__aiClass = aiClass
         self.clients = {}
         builtins.conn = self
 
@@ -27,6 +28,8 @@ class ServerRepository(AsyncConnectionRepository):
         self._loop.run_forever()
 
     async def handleClientConnect(self, reader, writer):
-        async with ClientRepositoryAI(reader, writer) as conn:
-            await conn.start()
-            del self.clients[conn.id]
+        async with self.__aiClass(reader, writer) as client:
+            self.clients[client.id] = client
+            await client.start()
+            await client.stop()
+            del self.clients[client.id]
