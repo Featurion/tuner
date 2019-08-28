@@ -48,7 +48,7 @@ class BroadcasterRepository(TTVClientRepository):
         await self.sendDatagram(Datagram(code=CLIENT_STREAM_REQ))
 
     async def r_handleStreamReqResp(self, dg):
-        print('broadcasting to channel: ', dg.data)
+        print('broadcasting to channel:', self.id)
         self.is_active = True
         self.__was_active = True
 

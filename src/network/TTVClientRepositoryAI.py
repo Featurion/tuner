@@ -8,31 +8,21 @@ from ..network.ClientRepositoryAI import ClientRepositoryAI
 class TTVClientRepositoryAI(ClientRepositoryAI):
 
     async def r_handleStreamReq(self, dg):
-        try:
-            conn.freeChannels.sort()
-            channel = conn.freeChannels.pop(0)
-        except IndexError:
-            channel = conn.channelCtx
-            conn.channelCtx += 1
+        conn.channelMap[self.id] = set()
+        await self.sendStreamReqResp()
 
-        conn.channelCtxMap[dg.user_id] = channel
-        conn.channelMap[channel] = set()
-        await self.sendStreamReqResp(channel)
-
-    async def sendStreamReqResp(self, channel):
-        dg = Datagram(code=CLIENT_STREAM_REQ_RESP, data=channel)
+    async def sendStreamReqResp(self):
+        dg = Datagram(code=CLIENT_STREAM_REQ_RESP)
         await self.sendDatagram(dg)
 
     async def sendStreamDone(self):
         dg = Datagram(code=CLIENT_STREAM_DONE)
         await self.sendDatagram(dg)
 
-        channel = conn.channelCtxMap.get(self.id)
-        viewers = conn.getViewers(channel)
+        viewers = conn.getViewers(self.id)
         for viewer in viewers:
-            await viewer.sendViewDone(channel)
-        del conn.channelCtxMap[self.id]
-        conn.freeChannels.append(channel)
+            await viewer.sendViewDone(self.id)
+        del conn.channelMap[self.id]
 
     async def r_handleStreamDone(self, dg):
         await self.sendStreamDone()
@@ -43,8 +33,7 @@ class TTVClientRepositoryAI(ClientRepositoryAI):
             n_bytes = dg.data - len(bytes_)
             bytes_ += await self._recv(65536 if n_bytes > 65536 else n_bytes)
 
-        channel = conn.channelCtxMap.get(self.id)
-        viewers = conn.getViewers(channel)
+        viewers = conn.getViewers(self.id)
         for viewer in viewers:
             await viewer.sendDatagram(dg)
             await viewer._send(bytes_)
@@ -55,7 +44,7 @@ class TTVClientRepositoryAI(ClientRepositoryAI):
             await self.sendViewReqResp(dg.data)
             viewers.add(dg.user_id)
         else:
-            await self.sendViewReqResp(0)
+            await self.sendViewReqResp(None)
 
     async def sendViewReqResp(self, channel):
         dg = Datagram(code=CLIENT_VIEW_REQ_RESP, data=channel)

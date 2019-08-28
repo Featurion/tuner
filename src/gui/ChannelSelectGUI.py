@@ -26,9 +26,4 @@ class ChannelSelectGUI(QWindow):
         self.button.clicked.connect(self.__cb_sanitized)
 
     def __cb_sanitized(self):
-        try:
-            channel = int(self.channel.text())
-        except ValueError:
-            channel = 0
-
-        self.__cb(channel)
+        self.__cb(self.channel.text())

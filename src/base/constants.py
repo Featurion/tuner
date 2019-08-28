@@ -1,7 +1,6 @@
 # General
 
 SERVER_VERSION = 'dev'
-BROADCAST_CHANNEL_MIN = 100
 
 # Message Types
 
