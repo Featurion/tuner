@@ -1,7 +1,5 @@
 import base64
 import cv2
-import io
-import msgpack
 import numpy as np
 
 from ..base.constants import *
@@ -19,12 +17,12 @@ class ReceiverRepository(TTVClientRepository):
         self.sent = False
 
     async def heartbeat(self):
-        if (self.__was_active is not None) and not self.is_active:
+        if (self.__was_active is not None) and not self.is_active.state:
             # done viewing
             await self.sendViewDone(self.__was_active)
             self.__was_active = None
             app.signal_channel_select.emit()
-        elif self.is_active:
+        elif self.is_active.state:
             # currently viewing
             pass
         else:
@@ -40,7 +38,7 @@ class ReceiverRepository(TTVClientRepository):
 
     async def r_handleViewReqResp(self, dg):
         if dg.data:
-            self.is_active = True
+            self.is_active.toggle()
             self.__was_active = dg.data
         else:
             pass # error

@@ -3,7 +3,7 @@ from ..network.ServerRepository import ServerRepository
 from ..network.TTVClientRepositoryAI import TTVClientRepositoryAI
 
 
-class ProviderRepository(ServerRepository):
+class TTVServerRepository(ServerRepository):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, aiClass=TTVClientRepositoryAI, **kwargs)

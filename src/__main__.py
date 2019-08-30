@@ -19,7 +19,7 @@ class Launcher(object):
 
     def run(self):
         if self.args.provider:
-            from .provider.ProviderApp import ProviderApp as App
+            from .network.ServerApp import ServerApp as App
         else:
             from .client.ClientApp import ClientApp as App
 

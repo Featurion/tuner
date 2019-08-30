@@ -1,6 +1,6 @@
 import asyncio
 import builtins
-import uuid
+import pyarchy
 
 from ..base.constants import *
 from ..network.Datagram import Datagram
@@ -20,10 +20,10 @@ class ClientRepository(ClientRepositoryBase, AsyncConnectionRepository):
         else:
             coro = asyncio.open_connection(loop=self._loop, sock=self)
             streams = self._loop.run_until_complete(coro)
-            ClientRepositoryBase.__init__(self, None, *streams)
+            ClientRepositoryBase.__init__(self, *streams, rand_id=False)
 
             hex_ = self._loop.run_until_complete(self._recv(32))
-            self._uuid = uuid.UUID(hex=hex_.decode())
+            self.id = pyarchy.core.Identity(hex_.decode())
         finally:
             self.__running = False
             builtins.conn = self
@@ -48,7 +48,7 @@ class ClientRepository(ClientRepositoryBase, AsyncConnectionRepository):
         await super().start()
 
     async def sendDatagram(self, dg: Datagram):
-        dg.user_id = self._uuid.hex
+        dg.user_id = self.id
         await super().sendDatagram(dg)
 
     async def heartbeat(self):

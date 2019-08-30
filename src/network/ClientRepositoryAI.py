@@ -1,15 +1,17 @@
 import asyncio
 import uuid
+from pyarchy.common import TimedObject
 
 from ..base.constants import *
 from ..network.Datagram import Datagram
 from ..network.ClientRepositoryBase import ClientRepositoryBase
 
 
-class ClientRepositoryAI(ClientRepositoryBase):
+class ClientRepositoryAI(ClientRepositoryBase, TimedObject):
 
     def __init__(self, reader, writer):
-        super().__init__(uuid.uuid4(), reader, writer)
+        ClientRepositoryBase.__init__(self, reader, writer)
+        TimedObject.__init__(self)
 
     async def start(self):
         print(self.id)

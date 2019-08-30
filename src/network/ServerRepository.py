@@ -1,5 +1,6 @@
 import asyncio
 import builtins
+import pyarchy
 import socket
 
 from ..network.ClientRepositoryAI import ClientRepositoryAI

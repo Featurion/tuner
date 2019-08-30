@@ -1,6 +1,7 @@
 import asyncio
 import base64
 import msgpack
+import pyarchy
 import socket
 import struct
 
@@ -9,7 +10,7 @@ from ..network.Datagram import Datagram
 from ..network.meta.MetaHandler import MetaHandler
 
 
-class ClientRepositoryBase(metaclass=MetaHandler):
+class ClientRepositoryBase(pyarchy.core.IdentifiedObject, metaclass=MetaHandler):
 
     msgtype = 'CLIENT'
 
@@ -24,16 +25,12 @@ class ClientRepositoryBase(metaclass=MetaHandler):
         else:
             return elem
 
-    def __init__(self, uuid_, reader, writer):
-        self._uuid = uuid_
+    def __init__(self, reader, writer, **kwargs):
+        super().__init__(**kwargs)
         self.__reader = reader
         self.__writer = writer
         self.__handlers = {code: getattr(self, name) for code, name in
                            self.__class__.handlers.items()}
-
-    @property
-    def id(self):
-        return self._uuid.hex
 
     @property
     def running(self):

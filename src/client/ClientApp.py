@@ -1,9 +1,9 @@
 from PyQt5.QtCore import pyqtSignal
 
-from ..gui.BroadcasterViewGUI import BroadcasterViewGUI
-from ..gui.ChannelSelectGUI import ChannelSelectGUI
-from ..gui.GraphicalApp import GraphicalApp
-from ..gui.ReceiverViewGUI import ReceiverViewGUI
+from src.gui.ChannelSelectGUI import ChannelSelectGUI
+from src.gui.GraphicalApp import GraphicalApp
+from src.gui.ReceiverViewGUI import ReceiverViewGUI
+from src.gui.ViewerGUI import ViewerGUI
 
 
 class ClientApp(GraphicalApp):
@@ -19,7 +19,7 @@ class ClientApp(GraphicalApp):
         self.signal_receiving.connect(self.enterReceiverMode)
 
     def enterBroadcastingMode(self):
-        self.window = BroadcasterViewGUI()
+        self.window = ViewerGUI('Broadcaster')
 
     def enterChannelSelect(self):
         self.window = ChannelSelectGUI(self.enterReceiverMode)

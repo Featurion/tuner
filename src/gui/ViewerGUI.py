@@ -2,12 +2,13 @@ from .QWindow import QWindow
 from ..client.VideoManager import VideoManager
 
 
-class BroadcasterViewGUI(QWindow):
+class ViewerGUI(QWindow):
 
-    def __init__(self):
+    def __init__(self, title=''):
         super().__init__()
+        self.__closed = False # work around QT bug
         self.video_mgr = None
-        self.setWindowTitle('Broadcaster')
+        self.setWindowTitle(title)
 
     def start(self):
         self.video_mgr = VideoManager(self)
@@ -15,8 +16,11 @@ class BroadcasterViewGUI(QWindow):
         super().start()
 
     def exitView(self):
-        conn.is_active = False
+        conn.is_active.toggle()
+        self.__closed = True
 
     def closeEvent(self, event):
         event.accept()
-        conn.is_active = False
+        if not self.__closed:
+            conn.is_active.toggle()
+        self.__closed = True

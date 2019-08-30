@@ -1,9 +1,7 @@
 import base64
 import cv2
-import io
-import json
-import msgpack
 import numpy as np
+import pyarchy
 
 from ..base.constants import *
 from ..network.TTVClientRepository import TTVClientRepository
@@ -15,17 +13,17 @@ class BroadcasterRepository(TTVClientRepository):
     def __init__(self, *args, **kwargs):
         app.signal_broadcasting.emit()
         super().__init__(*args, **kwargs)
-        self.__was_active = False
+        self.__was_active = pyarchy.mechanical.TrinarySwitch()
         self.__capture = cv2.VideoCapture(0)
         self.sent = False
 
     async def heartbeat(self, x=0):
-        if self.__was_active and not self.is_active:
+        if self.__was_active.state and not self.is_active.state:
             # done broadcasting
             await self.sendStreamDone()
-            self.__was_active = False
+            self.__was_active.state = False
             app.window.close()
-        elif self.is_active:
+        elif self.is_active.state:
             # currently broadcasting
             if self.__capture:
                 success, frame = self.__capture.read()
@@ -49,8 +47,8 @@ class BroadcasterRepository(TTVClientRepository):
 
     async def r_handleStreamReqResp(self, dg):
         print('broadcasting to channel:', self.id)
-        self.is_active = True
-        self.__was_active = True
+        self.is_active.toggle()
+        self.__was_active.state = True
 
     async def sendStreamDone(self):
         dg = Datagram(code=CLIENT_STREAM_DONE)

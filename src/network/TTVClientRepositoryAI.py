@@ -10,6 +10,7 @@ class TTVClientRepositoryAI(ClientRepositoryAI):
     async def r_handleStreamReq(self, dg):
         conn.channelMap[self.id] = set()
         await self.sendStreamReqResp()
+        print(conn.channelMap)
 
     async def sendStreamReqResp(self):
         dg = Datagram(code=CLIENT_STREAM_REQ_RESP)
@@ -22,6 +23,7 @@ class TTVClientRepositoryAI(ClientRepositoryAI):
         viewers = conn.getViewers(self.id)
         for viewer in viewers:
             await viewer.sendViewDone(self.id)
+
         del conn.channelMap[self.id]
 
     async def r_handleStreamDone(self, dg):
