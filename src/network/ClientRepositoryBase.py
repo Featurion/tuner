@@ -5,7 +5,7 @@ import pyarchy
 import socket
 import struct
 
-from ..base.constants import *
+from ..constants import *
 from ..network.Datagram import Datagram
 from ..network.meta.MetaHandler import MetaHandler
 

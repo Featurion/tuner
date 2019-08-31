@@ -1,9 +1,10 @@
+import asyncio
 import base64
 import cv2
 import numpy as np
-import pyarchy
+import time
 
-from ..base.constants import *
+from ..constants import *
 from ..network.TTVClientRepository import TTVClientRepository
 from ..network.Datagram import Datagram
 
@@ -11,48 +12,41 @@ from ..network.Datagram import Datagram
 class BroadcasterRepository(TTVClientRepository):
 
     def __init__(self, *args, **kwargs):
-        app.signal_broadcasting.emit()
         super().__init__(*args, **kwargs)
-        self.__was_active = pyarchy.mechanical.TrinarySwitch()
         self.__capture = cv2.VideoCapture(0)
-        self.sent = False
+        self.frame_bytes = (None, time.time())
 
-    async def heartbeat(self, x=0):
-        if self.__was_active.state and not self.is_active.state:
-            # done broadcasting
-            await self.sendStreamDone()
-            self.__was_active.state = False
-            app.window.close()
-        elif self.is_active.state:
-            # currently broadcasting
-            if self.__capture:
-                success, frame = self.__capture.read()
-                if success:
-                    _, bytes_ = cv2.imencode('.jpg', frame)
-                    await self.sendFrame(bytes_)
+    async def r_handleHelloResp(self, dg):
+        await self.sendStreamReq()
 
-                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    async def connBroke(self):
+        while app._channel:
+            app.window.video_mgr.static()
 
-                    if hasattr(app.window, 'video_mgr'):
-                        app.window.video_mgr.frame = frame
-        else:
-            # not currently broadcasting
-            # TEST
-            if not self.sent:
-                await self.sendStreamReq()
-                self.sent = True
+    async def heartbeat(self):
+        if self.__capture and app._channel:
+            success, frame = self.__capture.read()
+            if success:
+                _, bytes_ = cv2.imencode('.jpg', frame)
+                await self.sendFrame(bytes_)
+                self.frame_bytes = (bytes_, time.time())
+
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                app.window.video_mgr.frame = frame
 
     async def sendStreamReq(self):
-        await self.sendDatagram(Datagram(code=CLIENT_STREAM_REQ))
+        dg = Datagram(code=CLIENT_STREAM_REQ)
+        await self.sendDatagram(dg)
 
     async def r_handleStreamReqResp(self, dg):
+        app._channel = dg.data
         print('broadcasting to channel:', self.id)
-        self.is_active.toggle()
-        self.__was_active.state = True
+        app.signal_broadcasting.emit()
 
     async def sendStreamDone(self):
         dg = Datagram(code=CLIENT_STREAM_DONE)
         await self.sendDatagram(dg)
+        app._channel = 0
 
     async def r_handleStreamDone(self, dg):
         await self.connBroke()

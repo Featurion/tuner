@@ -2,7 +2,7 @@ import asyncio
 import uuid
 from pyarchy.common import TimedObject
 
-from ..base.constants import *
+from ..constants import *
 from ..network.Datagram import Datagram
 from ..network.ClientRepositoryBase import ClientRepositoryBase
 

@@ -11,11 +11,11 @@ class VideoManager(QObject):
 
     class _View(QWidget):
 
-        def __init__(self, parent):
+        def __init__(self, parent, cb):
             super().__init__(parent)
             self.__exit_btn = QImageButton('resources/exit_btn.jpg', self)
             self.__exit_btn.resize(40, 40)
-            self.__exit_btn.clicked.connect(parent.exitView)
+            self.__exit_btn.clicked.connect(cb)
 
         def paintEvent(self, event):
             frame = self.parent().video_mgr.frame
@@ -36,10 +36,10 @@ class VideoManager(QObject):
                 geom.moveCenter(center)
                 self.parent().move(geom.topLeft())
 
-    def __init__(self, window):
+    def __init__(self, window, cb):
         super().__init__(None)
         self.__frame = None
-        self.__view = VideoManager._View(window)
+        self.__view = VideoManager._View(window, cb)
         layout = QVBoxLayout(self.__view)
         window.setCentralWidget(self.__view)
 

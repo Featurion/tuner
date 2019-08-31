@@ -7,7 +7,7 @@ class AsyncConnectionRepository(ConnectionRepository):
 
     def __init__(self, *args, loop=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self._loop = loop or asyncio.get_event_loop()
+        self._network_loop = loop or asyncio.get_event_loop()
 
     def run(self):
         try:
@@ -20,16 +20,16 @@ class AsyncConnectionRepository(ConnectionRepository):
 
     def handleDisconnected(self):
         # stop all tasks
-        tasks = asyncio.gather(*asyncio.Task.all_tasks(loop=self._loop),
-                               loop=self._loop,
+        tasks = asyncio.gather(*asyncio.Task.all_tasks(loop=self._network_loop),
+                               loop=self._network_loop,
                                return_exceptions=True)
-        tasks.add_done_callback(lambda task: self._loop.stop())
+        tasks.add_done_callback(lambda task: self._network_loop.stop())
         tasks.cancel()
 
         # wait for tasks to finish
-        while not tasks.done() and not self._loop.is_closed():
-            self._loop.run_forever()
+        while not tasks.done() and not self._network_loop.is_closed():
+            self._network_loop.run_forever()
 
     def cleanup(self):
         super().cleanup()
-        self._loop.close()
+        self._network_loop.close()

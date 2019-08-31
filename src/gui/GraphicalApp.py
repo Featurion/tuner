@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QApplication
 
-from ..base.ClientAgent import ClientAgent
+from ..client.ClientAgent import ClientAgent
 from ..gui.ConnectGUI import ConnectGUI
 
 

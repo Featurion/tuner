@@ -1,62 +1,59 @@
 import asyncio
 
-from ..base.constants import *
+from ..constants import *
 from ..network.Datagram import Datagram
 from ..network.ClientRepositoryAI import ClientRepositoryAI
 
 
 class TTVClientRepositoryAI(ClientRepositoryAI):
 
-    async def r_handleStreamReq(self, dg):
-        conn.channelMap[self.id] = set()
-        await self.sendStreamReqResp()
-        print(conn.channelMap)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._channel = 0
 
-    async def sendStreamReqResp(self):
-        dg = Datagram(code=CLIENT_STREAM_REQ_RESP)
+    async def stop(self):
+        if self._channel:
+            await self.sendStreamDone()
+            self._channel = 0
+
+    async def r_handleStreamReq(self, dg):
+        channel = await conn.allocateChannel(dg.user_id)
+        await self.sendStreamReqResp(channel)
+
+    async def sendStreamReqResp(self, channel):
+        dg = Datagram(code=CLIENT_STREAM_REQ_RESP, data=channel)
         await self.sendDatagram(dg)
+        self._channel = channel
 
     async def sendStreamDone(self):
-        dg = Datagram(code=CLIENT_STREAM_DONE)
-        await self.sendDatagram(dg)
-
-        viewers = conn.getViewers(self.id)
-        for viewer in viewers:
-            await viewer.sendViewDone(self.id)
-
-        del conn.channelMap[self.id]
+        channel = await conn.getChannel(self.id)
+        if channel:
+            dg = Datagram(code=CLIENT_STREAM_DONE, data=channel)
+            await self.sendDatagram(dg)
+            await conn.propogate(dg, channel)
 
     async def r_handleStreamDone(self, dg):
         await self.sendStreamDone()
 
     async def r_handleFrame(self, dg):
+        if not self._channel:
+            return
+
         bytes_ = b''
         while len(bytes_) < dg.data:
             n_bytes = dg.data - len(bytes_)
             bytes_ += await self._recv(65536 if n_bytes > 65536 else n_bytes)
 
-        viewers = conn.getViewers(self.id)
-        for viewer in viewers:
-            await viewer.sendDatagram(dg)
-            await viewer._send(bytes_)
+        channel = await conn.getChannel(self.id)
+        await conn.propogate(dg, channel, bytes_)
 
     async def r_handleViewReq(self, dg):
-        viewers = conn.channelMap.get(dg.data)
-        if viewers is not None:
-            await self.sendViewReqResp(dg.data)
-            viewers.add(dg.user_id)
-        else:
-            await self.sendViewReqResp(None)
+        success = await conn.enterView(dg)
+        await self.sendViewReqResp(success)
 
     async def sendViewReqResp(self, channel):
         dg = Datagram(code=CLIENT_VIEW_REQ_RESP, data=channel)
         await self.sendDatagram(dg)
 
-    async def sendViewDone(self, channel):
-        dg = Datagram(code=CLIENT_VIEW_DONE, data=channel)
-        await self.sendDatagram(dg)
-
     async def r_handleViewDone(self, dg):
-        viewers = conn.channelMap.get(dg.data)
-        if viewers is not None:
-            viewers.discard(dg.user_id)
+        await conn.exitView(dg)

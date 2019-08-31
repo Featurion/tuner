@@ -19,14 +19,15 @@ class ServerRepository(AsyncConnectionRepository):
 
     def connect(self):
         # setup serving protocol
-        coro = self._loop.create_server(
+        coro = self._network_loop.create_server(
             lambda: asyncio.StreamReaderProtocol(
                 asyncio.StreamReader(),
                 self.handleClientConnect),
             sock=self)
         # start serving
-        self._loop.run_until_complete(coro)
-        self._loop.run_forever()
+        self._network_loop.run_until_complete(coro)
+        self._network_loop.run_until_complete(self.__storeData())
+        self._network_loop.run_forever()
 
     async def handleClientConnect(self, reader, writer):
         async with self.__aiClass(reader, writer) as client:
@@ -34,3 +35,11 @@ class ServerRepository(AsyncConnectionRepository):
             await client.start()
             await client.stop()
             del self.clients[client.id]
+
+    async def __storeData(self):
+        while True:
+            await self.storeData()
+            await asyncio.sleep(15)
+
+    async def storeData(self):
+        pass

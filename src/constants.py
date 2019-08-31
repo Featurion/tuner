@@ -1,6 +1,7 @@
 # General
 
 SERVER_VERSION = 'dev'
+BASE_CHANNEL = 100
 
 # Message Types
 

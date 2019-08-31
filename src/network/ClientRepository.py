@@ -2,7 +2,7 @@ import asyncio
 import builtins
 import pyarchy
 
-from ..base.constants import *
+from ..constants import *
 from ..network.Datagram import Datagram
 from ..network.ClientRepositoryBase import ClientRepositoryBase
 from ..network.AsyncConnectionRepository import AsyncConnectionRepository
@@ -18,11 +18,11 @@ class ClientRepository(ClientRepositoryBase, AsyncConnectionRepository):
             # TODO
             return
         else:
-            coro = asyncio.open_connection(loop=self._loop, sock=self)
-            streams = self._loop.run_until_complete(coro)
+            coro = asyncio.open_connection(loop=self._network_loop, sock=self)
+            streams = self._network_loop.run_until_complete(coro)
             ClientRepositoryBase.__init__(self, *streams, rand_id=False)
 
-            hex_ = self._loop.run_until_complete(self._recv(32))
+            hex_ = self._network_loop.run_until_complete(self._recv(32))
             self.id = pyarchy.core.Identity(hex_.decode())
         finally:
             self.__running = False
@@ -34,7 +34,7 @@ class ClientRepository(ClientRepositoryBase, AsyncConnectionRepository):
 
     def connect(self):
         self.__running = True
-        self._loop.run_until_complete(self.start())
+        self._network_loop.run_until_complete(self.start())
 
     def disconnect(self):
         self.__running = False

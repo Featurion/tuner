@@ -7,7 +7,7 @@ class ChannelSelectGUI(QWindow):
 
     def __init__(self, cb):
         super().__init__()
-        self.__cb = cb
+        self.__guiCallback = cb
 
         self.resize(600, 400)
 
@@ -23,7 +23,12 @@ class ChannelSelectGUI(QWindow):
         self.button = QPushButton('Start', self)
         self.button.move(290, 180)
         self.button.resize(70, 25)
-        self.button.clicked.connect(self.__cb_sanitized)
+        self.button.clicked.connect(self.__cb)
 
-    def __cb_sanitized(self):
-        self.__cb(self.channel.text())
+    def __cb(self):
+        try:
+            channel = int(self.channel.text())
+        except ValueError:
+            return
+
+        self.__guiCallback(channel)
