@@ -1,2 +1,0 @@
-# tuner
-IPTV
